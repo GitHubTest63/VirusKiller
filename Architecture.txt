@@ -1,0 +1,12 @@
+ServerManager(server)
+ConnectionManager(client)
+LocalisationManager
+QualityManager
+EnemyManager(SpawnerManager)
+AudioManager
+GameManager(save, load, progression)
+(HealthManager)
+GUIManager
+InventoryManager
+ShopManager
+
