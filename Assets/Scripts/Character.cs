@@ -16,12 +16,14 @@ public abstract class Character : MonoBehaviour
     public float speed = 3;
 
     public Weapon weapon;
+    protected Animator anim;
 
     // Use this for initialization
     void Start()
     {
         if (this.health == 0)
             this.health = this.maxHealth;
+        this.anim = GetComponent<Animator>();
     }
 
     // Update is called once per frame

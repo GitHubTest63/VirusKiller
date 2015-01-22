@@ -12,11 +12,8 @@ public class Enemy : Character
 
     public Type enemyType = Type.CAC;
     public Transform target;
-    // Use this for initialization
-    void Start()
-    {
+    private bool isWalking = false;
 
-    }
 
     // Update is called once per frame
     void Update()
@@ -34,7 +31,13 @@ public class Enemy : Character
             }
             else
             {
+                if (this.isWalking)
+                {
+                    isWalking = false;
+                    this.anim.SetBool("isWalking", false);
+                }
                 attack();
+                this.anim.SetBool("isAttacking", true);
             }
         }
     }
@@ -47,7 +50,14 @@ public class Enemy : Character
     private void follow()
     {
         if (hasTarget())
+        {
             this.moveForward(Time.deltaTime);
+            if (!isWalking)
+            {
+                this.isWalking = true;
+                this.anim.SetBool("isWalking", true);
+            }
+        }
     }
 
     private void attack()

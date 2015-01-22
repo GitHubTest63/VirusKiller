@@ -10,17 +10,19 @@ public class PlayerShooting : MonoBehaviour
     float timer;
     Ray shootRay;
     RaycastHit shootHit;
-    int shootableMask;
+    //int shootableMask;
     ParticleSystem gunParticles;
     LineRenderer gunLine;
     AudioSource gunAudio;
     Light gunLight;
     float effectsDisplayTime = 0.2f;
 
+    public GameObject explosion;
+
 
     void Awake()
     {
-        shootableMask = LayerMask.GetMask("Shootable");
+        //shootableMask = LayerMask.GetMask("Shootable");
         gunParticles = GetComponent<ParticleSystem>();
         gunLine = GetComponent<LineRenderer>();
         gunAudio = GetComponent<AudioSource>();
@@ -68,7 +70,7 @@ public class PlayerShooting : MonoBehaviour
         shootRay.origin = transform.position;
         shootRay.direction = transform.forward;
 
-        if (Physics.Raycast(shootRay, out shootHit, range, shootableMask))
+        if (Physics.Raycast(shootRay, out shootHit, range))
         {
             //MyEnemyHealth enemyHealth = shootHit.collider.GetComponent<MyEnemyHealth>();
             //if (enemyHealth != null)
@@ -76,6 +78,15 @@ public class PlayerShooting : MonoBehaviour
             //    enemyHealth.takeDamage(damagePerShot);//, shootHit.point);
             //}
             gunLine.SetPosition(1, shootHit.point);
+            if (this.explosion)
+            {
+                GameObject explosion = Instantiate(this.explosion, shootHit.point, Quaternion.identity) as GameObject;
+                ParticleSystem emitter = explosion.GetComponent<ParticleSystem>();
+                Destroy(explosion, emitter.duration + emitter.startLifetime);
+                Light light = explosion.GetComponent<Light>();
+                Destroy(light, 0.1f);
+
+            }
         }
         else
         {
