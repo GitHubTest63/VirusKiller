@@ -72,11 +72,11 @@ public class PlayerShooting : MonoBehaviour
 
         if (Physics.Raycast(shootRay, out shootHit, range))
         {
-            //MyEnemyHealth enemyHealth = shootHit.collider.GetComponent<MyEnemyHealth>();
-            //if (enemyHealth != null)
-            //{
-            //    enemyHealth.takeDamage(damagePerShot);//, shootHit.point);
-            //}
+            Enemy enemy = shootHit.collider.GetComponent<Enemy>();
+            if (enemy != null)
+            {
+                enemy.takeDamage(Character.DamageType.PHYSIC, this.damagePerShot);
+            }
             gunLine.SetPosition(1, shootHit.point);
             if (this.explosion)
             {

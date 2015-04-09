@@ -29,12 +29,11 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
     }
 
     public float getProgress()
     {
-        if (this.loading == null)
+        if (this.loading == null || this.loading.isDone)
             return 0.0f;
         else
             return this.loading.progress;
@@ -54,7 +53,6 @@ public class GameManager : MonoBehaviour
     {
         if (sceneName == null || sceneName.Equals(""))
             Debug.Log("Impossible to load scene " + sceneName);
-
         this.loading = Application.LoadLevelAsync(sceneName);
     }
 }

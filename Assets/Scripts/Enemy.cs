@@ -64,8 +64,14 @@ public class Enemy : Character
     {
         if (hasTarget())
         {
-            Debug.Log("Attack");
+            //Debug.Log("Attack");
         }
+    }
+
+    protected override void death()
+    {
+        base.death();
+        Destroy(this.gameObject);
     }
 
     void OnTriggerEnter(Collider other)

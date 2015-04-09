@@ -10,15 +10,15 @@ public abstract class Character : MonoBehaviour
         PHYSIC
     }
 
-    public float health;
-    public float maxHealth = 100;
+    public int health;
+    public int maxHealth = 100;
     public float range = 10;
     public float speed = 3;
 
     public Weapon weapon;
     protected Animator anim;
+    public GameObject damageTextPrefab;
 
-    // Use this for initialization
     void Start()
     {
         if (this.health == 0)
@@ -26,7 +26,6 @@ public abstract class Character : MonoBehaviour
         this.anim = GetComponent<Animator>();
     }
 
-    // Update is called once per frame
     void Update()
     {
 
@@ -37,9 +36,25 @@ public abstract class Character : MonoBehaviour
         this.transform.Translate(this.transform.forward * this.speed * tpf, Space.World);
     }
 
-    public void takeDamage(DamageType type, float amount)
+    public void takeDamage(DamageType type, int amount)
     {
-
+        this.health = Mathf.Clamp(this.health - amount, 0, this.maxHealth);
+        if (!isAlive())
+        {
+            this.death();
+        }
+        else
+        {
+            if (this.damageTextPrefab != null)
+            {
+                Vector3 pos = Camera.main.WorldToViewportPoint(transform.position);
+                pos.x = Mathf.Clamp(pos.x, 0.05f, 0.95f); // clamp position to screen to ensure
+                pos.y = Mathf.Clamp(pos.y, 0.05f, 0.9f); // the string will be visible
+                pos.z = 0.0f;
+                GameObject damageText = Instantiate(this.damageTextPrefab, pos, Quaternion.identity) as GameObject;
+                damageText.GetComponent<DamageText>().setValue(amount);
+            }
+        }
     }
 
     public float getDamages()
@@ -50,5 +65,10 @@ public abstract class Character : MonoBehaviour
     public bool isAlive()
     {
         return this.health > 0;
+    }
+
+    protected virtual void death()
+    {
+        Debug.Log("Death of " + this.tag);
     }
 }

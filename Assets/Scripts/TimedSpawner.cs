@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public abstract class TimedSpawner : Spawner
+public class TimedSpawner : Spawner
 {
     public float interval = 1.0f;
     private float timer;
