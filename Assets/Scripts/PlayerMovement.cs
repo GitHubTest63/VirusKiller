@@ -53,6 +53,7 @@ public class PlayerMovement : MonoBehaviour
             this.canRotate = true;
             //movement
             this.transform.Translate(transform.forward * this.speed * Time.fixedDeltaTime, Space.World);
+            //NetworkManager.Instance.send("PositionMessage", this.transform.position.x, this.transform.position.y, this.transform.position.z);
         }
 
         if (this.canRotate)

@@ -49,6 +49,11 @@ public class GameManager : MonoBehaviour
         this.goToScene("mainScene");
     }
 
+    public void goToLobbyScene()
+    {
+        this.goToScene("lobbyScene");
+    }
+
     public void goToScene(string sceneName)
     {
         if (sceneName == null || sceneName.Equals(""))

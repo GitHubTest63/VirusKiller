@@ -12,25 +12,39 @@ public class GUIManager : MonoBehaviour
         get { return instance; }
     }
     private GameObject canvas;
-    private GameObject options;
-    private GameObject leaderboard;
-    private GameObject lobby;
     private GameObject loading;
     private Slider loadingProgressBar;
     private Text loadingProgressText;
     private GameManager gameManager;
     private Dictionary<string, GameObject> menus = new Dictionary<string, GameObject>();
 
+    private GameObject errorDisplayer;
+    public float errorDisplayingTime = 1.0f;
+
+    void Awake()
+    {
+        if (instance == null)
+        {
+            instance = this;
+            DontDestroyOnLoad(this.gameObject);
+        }
+        else
+        {
+            Destroy(this);
+        }
+    }
+
     void Start()
     {
         this.gameManager = GameManager.Instance;
         this.canvas = this.transform.FindChild("Canvas").gameObject;
-        this.options = findAndRegisterMenu("Options");
-        this.leaderboard = findAndRegisterMenu("Leaderboard");
-        this.lobby = findAndRegisterMenu("Lobby");
         this.loading = findAndRegisterMenu("Loading");
         loadingProgressBar = loading.transform.FindChild("ProgressBar").gameObject.GetComponent<Slider>();
         loadingProgressText = loading.transform.FindChild("ProgressText").gameObject.GetComponent<Text>();
+
+
+        this.errorDisplayer = canvas.transform.FindChild("ErrorDisplayer").gameObject;
+        this.errorDisplayer.SetActive(false);
     }
 
     void Update()
@@ -95,6 +109,31 @@ public class GUIManager : MonoBehaviour
     public void quit()
     {
         Application.Quit();
+    }
+
+    public void displayErrorMessage(string text)
+    {
+        StopCoroutine("showErrorMessage");
+        StartCoroutine("showErrorMessage", text);
+    }
+
+    private IEnumerator showErrorMessage(string text)
+    {
+        this.errorDisplayer.SetActive(true);
+        Text txt = this.errorDisplayer.GetComponentInChildren<Text>();
+        txt.text = text;
+        CanvasGroup cg = this.errorDisplayer.GetComponent<CanvasGroup>();
+        cg.alpha = 1.0f;
+        yield return new WaitForSeconds(this.errorDisplayingTime * 0.6f);
+        float remainingTime = this.errorDisplayingTime * 0.4f;
+        float currentAlpha = cg.alpha;
+        while (currentAlpha > 0)
+        {
+            currentAlpha -= Time.deltaTime / remainingTime;
+            cg.alpha = currentAlpha;
+            yield return null;
+        }
+        this.errorDisplayer.SetActive(false);
     }
 }
 
