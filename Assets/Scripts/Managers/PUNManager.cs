@@ -5,7 +5,8 @@ using System;
 public class PUNManager : MonoBehaviour
 {
     private const string roomName = "Game";
-    private RoomInfo[] roomsList; public GameObject playerPrefab;
+    private RoomInfo[] roomsList;
+    public GameObject playerPrefab;
 
     void Start()
     {
@@ -46,6 +47,7 @@ public class PUNManager : MonoBehaviour
     {
         roomsList = PhotonNetwork.GetRoomList();
     }
+
     void OnJoinedRoom()
     {
         // Spawn player

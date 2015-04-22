@@ -1,11 +1,18 @@
 ﻿using UnityEngine;
 
-public class PlayerMovement : MonoBehaviour
+public class PlayerMovement : Photon.MonoBehaviour
 {
 
     private static Quaternion workingQuaternion = new Quaternion();
     public float speed = 6.0f;
     public float rotationSpeed = 1.0f;
+    private float lastSynchronizationTime = 0f;
+    private float syncDelay = 0f;
+    private float syncTime = 0f;
+    private Vector3 syncStartPosition = Vector3.zero;
+    private Vector3 syncEndPosition = Vector3.zero;
+    private Quaternion syncStartRotation = Quaternion.identity;
+    private Quaternion syncEndRotation = Quaternion.identity;
 
     private Vector3 movement;
     //private Animator anim;
@@ -33,6 +40,18 @@ public class PlayerMovement : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (this.photonView.isMine)
+        {
+            InputMovement();
+        }
+        else
+        {
+            SyncedTransform();
+        }
+    }
+
+    void InputMovement()
+    {
         float h;
         float v;
         if (this.editorMode)
@@ -52,8 +71,8 @@ public class PlayerMovement : MonoBehaviour
             this.targetRotation = (Quaternion.AngleAxis(Mathf.Atan2(h, v) * Mathf.Rad2Deg, Vector3.up));
             this.canRotate = true;
             //movement
-            this.transform.Translate(transform.forward * this.speed * Time.fixedDeltaTime, Space.World);
-            //NetworkManager.Instance.send("PositionMessage", this.transform.position.x, this.transform.position.y, this.transform.position.z);
+            this.playerRigidbody.MovePosition(this.playerRigidbody.position + transform.forward * this.speed * Time.fixedDeltaTime);
+            //this.transform.Translate(transform.forward * this.speed * Time.fixedDeltaTime, Space.World);
         }
 
         if (this.canRotate)
@@ -65,6 +84,13 @@ public class PlayerMovement : MonoBehaviour
                 this.transform.rotation = this.targetRotation;
             }
         }
+    }
+
+    private void SyncedTransform()
+    {
+        syncTime += Time.deltaTime;
+        playerRigidbody.position = Vector3.Lerp(syncStartPosition, syncEndPosition, syncTime / syncDelay);
+        playerRigidbody.rotation = Quaternion.Lerp(syncStartRotation, syncEndRotation, syncTime / syncDelay);
     }
 
     private void updateRotation()
@@ -79,6 +105,32 @@ public class PlayerMovement : MonoBehaviour
 
             workingQuaternion.SetLookRotation(playerToMouse);
             playerRigidbody.MoveRotation(workingQuaternion);
+        }
+    }
+
+    void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if (stream.isWriting)
+        {
+            stream.SendNext(rigidbody.position);
+            stream.SendNext(rigidbody.rotation);
+            stream.SendNext(rigidbody.velocity);
+        }
+        else
+        {
+            Vector3 syncPosition = (Vector3)stream.ReceiveNext();
+            Quaternion syncRotation = (Quaternion)stream.ReceiveNext();
+            Vector3 syncVelocity = (Vector3)stream.ReceiveNext();
+
+            syncTime = 0f;
+            syncDelay = Time.time - lastSynchronizationTime;
+            lastSynchronizationTime = Time.time;
+
+            syncEndPosition = syncPosition + syncVelocity * syncDelay;
+            syncStartPosition = playerRigidbody.position;
+
+            syncEndRotation = syncRotation;
+            syncStartRotation = playerRigidbody.rotation;
         }
     }
 }

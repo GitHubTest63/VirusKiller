@@ -4,7 +4,8 @@ using System.Collections;
 public class PlayerPUN : Photon.MonoBehaviour
 {
 
-    public float speed = 10f; private float lastSynchronizationTime = 0f;
+    public float speed = 10f;
+    private float lastSynchronizationTime = 0f;
     private float syncDelay = 0f;
     private float syncTime = 0f;
     private Vector3 syncStartPosition = Vector3.zero;
