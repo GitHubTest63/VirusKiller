@@ -8,6 +8,11 @@ public class User : Character
     public int score = 0;
     public List<Weapon> availableWeapons;
 
+    protected override void Start()
+    {
+        base.Start();
+        this.updateHealth();
+    }
 
     public void respawn()
     {
@@ -17,6 +22,18 @@ public class User : Character
     public void reload()
     {
 
+    }
+
+    protected override void modifyHealth(int amount)
+    {
+        base.modifyHealth(amount);
+        this.updateHealth();
+    }
+
+    private void updateHealth()
+    {
+        if (this.photonView.isMine)
+            GUIManager_Game.Instance.setHealth(this.health, this.maxHealth);
     }
 
     public void changeWeapon(Weapon weapon)

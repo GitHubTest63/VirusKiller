@@ -269,7 +269,16 @@ public class NetworkManager : Photon.PunBehaviour
     {
         //PhotonNetwork.JoinOrCreateRoom(roomName, new RoomOptions() { }, TypedLobby.Default);
         // Spawn player
-        PhotonNetwork.Instantiate("Prefabs/" + playerPrefab.name, Vector3.up * 5, Quaternion.identity, 0);
+        GameObject player = PhotonNetwork.Instantiate("Prefabs/" + playerPrefab.name, Vector3.up * 5, Quaternion.identity, 0);
+
+        //init miniMap
+        GameObject miniMapCamera = GameObject.Find("MiniMapCamera");
+        MiniMapFollow follow = miniMapCamera.GetComponent<MiniMapFollow>();
+        follow.target = player;
+
+        //attach main camera
+        CameraFollow camFollow = Camera.main.GetComponent<CameraFollow>();
+        camFollow.setTarget(player.transform);
     }
 
     /*void OnLevelWasLoaded(int level)

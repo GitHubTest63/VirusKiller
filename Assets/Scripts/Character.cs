@@ -1,14 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public abstract class Character : MonoBehaviour
+public abstract class Character : Photon.MonoBehaviour
 {
-
-    public enum DamageType
-    {
-        MAGIC,
-        PHYSIC
-    }
 
     public int health;
     public int maxHealth = 100;
@@ -19,11 +13,14 @@ public abstract class Character : MonoBehaviour
     protected Animator anim;
     public GameObject damageTextPrefab;
 
-    void Start()
+    protected virtual void Start()
     {
         if (this.health == 0)
             this.health = this.maxHealth;
         this.anim = GetComponent<Animator>();
+
+        //temp
+        this.weapon = new Weapon();
     }
 
     void Update()
@@ -36,9 +33,9 @@ public abstract class Character : MonoBehaviour
         this.transform.Translate(this.transform.forward * this.speed * tpf, Space.World);
     }
 
-    public void takeDamage(DamageType type, int amount)
+    public void takeDamage(Weapon.DamageType type, int amount)
     {
-        this.health = Mathf.Clamp(this.health - amount, 0, this.maxHealth);
+        this.modifyHealth(amount);
         if (!isAlive())
         {
             this.death();
@@ -55,6 +52,15 @@ public abstract class Character : MonoBehaviour
                 damageText.GetComponent<DamageText>().setValue(amount);
             }
         }
+    }
+
+    [RPC]
+    protected virtual void modifyHealth(int amount)
+    {
+        this.health = Mathf.Clamp(this.health - amount, 0, this.maxHealth);
+
+        if (this.photonView.isMine)
+            this.photonView.RPC("modifyHealth", PhotonTargets.Others, amount);
     }
 
     public float getDamages()

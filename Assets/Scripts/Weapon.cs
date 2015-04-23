@@ -1,10 +1,17 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public abstract class Weapon
+public class Weapon
 {
-    public float damageValue = 1;
-    public DamageType damageType = DamageType.PHYSIC;
+
+    public enum DamageType
+    {
+        MAGIC,
+        PHYSIC
+    }
+
+    public int damageValue = 1;
+    public Weapon.DamageType damageType = DamageType.PHYSIC;
 
     public virtual void applyDamages()
     {

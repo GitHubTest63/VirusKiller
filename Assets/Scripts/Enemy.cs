@@ -13,6 +13,8 @@ public class Enemy : Character
     public Type enemyType = Type.CAC;
     public Transform target;
     private bool isWalking = false;
+    private bool canAttack = true;
+    public float attackCooldown = 1.5f;
 
 
     // Update is called once per frame
@@ -37,7 +39,6 @@ public class Enemy : Character
                     this.anim.SetBool("isWalking", false);
                 }
                 attack();
-                this.anim.SetBool("isAttacking", true);
             }
         }
     }
@@ -62,10 +63,25 @@ public class Enemy : Character
 
     private void attack()
     {
-        if (hasTarget())
+        if (hasTarget() && this.canAttack)
         {
-            //Debug.Log("Attack");
+            Debug.Log("Attack");
+            StartCoroutine(this.setAttackOnCooldown());
+            Character user = this.target.GetComponent<Character>();
+            if (user)
+            {
+                user.takeDamage(this.weapon.damageType, this.weapon.damageValue);
+            }
         }
+    }
+
+    private IEnumerator setAttackOnCooldown()
+    {
+        this.canAttack = false;
+        this.anim.SetBool("isAttacking", true);
+        yield return new WaitForSeconds(this.attackCooldown);
+        this.canAttack = true;
+        this.anim.SetBool("isAttacking", false);
     }
 
     protected override void death()
@@ -76,6 +92,10 @@ public class Enemy : Character
 
     void OnTriggerEnter(Collider other)
     {
+        if (this.target)
+        {
+            return;
+        }
         if (other.tag.Equals("Player"))
         {
             this.target = other.gameObject.transform;

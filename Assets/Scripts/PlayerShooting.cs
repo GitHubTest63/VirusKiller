@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class PlayerShooting : MonoBehaviour
+public class PlayerShooting : Photon.MonoBehaviour
 {
     public int damagePerShot = 20;
     public float timeBetweenBullets = 0.15f;
@@ -29,31 +29,40 @@ public class PlayerShooting : MonoBehaviour
         gunLight = GetComponent<Light>();
     }
 
+    void Start()
+    {
+    }
 
     void Update()
     {
-        timer += Time.deltaTime;
-
-        if (Input.GetButton("Fire1") && timer >= timeBetweenBullets && Time.timeScale != 0)
+        if (this.photonView.isMine)
         {
-            Shoot();
-        }
+            timer += Time.deltaTime;
 
-        if (timer >= timeBetweenBullets * effectsDisplayTime)
-        {
-            DisableEffects();
+            if (Input.GetButton("Fire1") && timer >= timeBetweenBullets && Time.timeScale != 0)
+            {
+                shoot();
+            }
+
+            if (timer >= timeBetweenBullets * effectsDisplayTime)
+            {
+                this.disableEffects();
+            }
         }
     }
 
-
-    public void DisableEffects()
+    [RPC]
+    public void disableEffects()
     {
         gunLine.enabled = false;
         gunLight.enabled = false;
+
+        if (this.photonView.isMine)
+            this.photonView.RPC("disableEffects", PhotonTargets.Others);
     }
 
-
-    void Shoot()
+    [RPC]
+    void shoot()
     {
         timer = 0f;
 
@@ -75,7 +84,7 @@ public class PlayerShooting : MonoBehaviour
             Enemy enemy = shootHit.collider.GetComponent<Enemy>();
             if (enemy != null)
             {
-                enemy.takeDamage(Character.DamageType.PHYSIC, this.damagePerShot);
+                enemy.takeDamage(Weapon.DamageType.PHYSIC, this.damagePerShot);
             }
             gunLine.SetPosition(1, shootHit.point);
             if (this.explosion)
@@ -92,5 +101,8 @@ public class PlayerShooting : MonoBehaviour
         {
             gunLine.SetPosition(1, shootRay.origin + shootRay.direction * range);
         }
+
+        if (this.photonView.isMine)
+            this.photonView.RPC("shoot", PhotonTargets.Others);
     }
 }
