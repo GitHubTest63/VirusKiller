@@ -32,6 +32,10 @@ public class MapManager : MonoBehaviour
     private Image mapIcon;
     private Text mapDesc;
     private Text mapName;
+    private Text chooseButtonText;
+
+    private string selectedMapChooseButtonText = "Remove";
+    private string defaultMapChooseButtonText = "Choose";
 
     void Awake()
     {
@@ -53,6 +57,7 @@ public class MapManager : MonoBehaviour
         this.mapIcon = this.transform.FindChild("MapSelection/MapIcon").GetComponent<Image>();
         this.mapDesc = this.transform.FindChild("MapSelection/Description").GetComponentInChildren<Text>();
         this.mapName = this.transform.FindChild("MapSelection/Name").GetComponent<Text>();
+        this.chooseButtonText = this.transform.FindChild("MapSelection/Choose").GetComponentInChildren<Text>();
         if (this.availablesMaps.Count > 0)
         {
             this.currentMapIndex = 0;
@@ -84,6 +89,12 @@ public class MapManager : MonoBehaviour
         return this.availablesMaps[this.currentMapIndex];
     }
 
+    public void selectCurrentMap()
+    {
+        Map m = this.availablesMaps[this.currentMapIndex];
+        this.selectMap(m.name);
+    }
+
     public void selectMap(string mapName)
     {
         NetworkManager.Instance.sendSelectedMap(mapName);
@@ -107,6 +118,20 @@ public class MapManager : MonoBehaviour
         this.mapName.text = m.name;
         this.mapIcon.sprite = m.icon;
         this.mapDesc.text = m.description;
+        this.updateChooseButtonText();
+    }
+
+    private void updateChooseButtonText()
+    {
+        Dictionary<string, Text> players = this.getOrCreatePlayerList(this.mapName.text);
+        if (players.ContainsKey(NetworkManager.Instance.playerName))
+        {
+            this.chooseButtonText.text = this.selectedMapChooseButtonText;
+        }
+        else
+        {
+            this.chooseButtonText.text = this.defaultMapChooseButtonText;
+        }
     }
 
     public void playSelectedMap()
@@ -138,13 +163,14 @@ public class MapManager : MonoBehaviour
         Dictionary<string, Text> players = this.getOrCreatePlayerList(mapName);
         if (players.ContainsKey(playerName))
         {
-            return;
+            this.removePlayer(mapName, playerName);
         }
         Debug.Log("add " + playerName + " to map " + mapName);
         Text txt = GameObject.Instantiate(this.selectedPlayerText) as Text;
         txt.text = playerName;
         txt.transform.SetParent(this.selectedPlayersContent.transform, false);
         players.Add(playerName, txt);
+        this.updateChooseButtonText();
     }
 
     public void removePlayer(string mapName, string playerName)

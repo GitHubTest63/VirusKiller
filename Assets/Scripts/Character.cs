@@ -1,13 +1,14 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public abstract class Character : Photon.MonoBehaviour
+public abstract class Character : MonoBehaviour
 {
 
     public int health;
     public int maxHealth = 100;
-    public float range = 10;
-    public float speed = 3;
+    public float range = 10.0f;
+    public float speed = 3.0f;
+    public float rotationSpeed = 180.0f;
 
     public Weapon weapon;
     protected Animator anim;
@@ -54,13 +55,12 @@ public abstract class Character : Photon.MonoBehaviour
         }
     }
 
-    [RPC]
     protected virtual void modifyHealth(int amount)
     {
         this.health = Mathf.Clamp(this.health - amount, 0, this.maxHealth);
 
-        if (this.photonView.isMine)
-            this.photonView.RPC("modifyHealth", PhotonTargets.Others, amount);
+        /*if (this.photonView.isMine)
+            this.photonView.RPC("modifyHealth", PhotonTargets.Others, amount);*/
     }
 
     public float getDamages()

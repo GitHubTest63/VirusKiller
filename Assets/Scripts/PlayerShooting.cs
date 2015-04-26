@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class PlayerShooting : Photon.MonoBehaviour
+public class PlayerShooting : MonoBehaviour
 {
     public int damagePerShot = 20;
     public float timeBetweenBullets = 0.15f;
@@ -35,33 +35,25 @@ public class PlayerShooting : Photon.MonoBehaviour
 
     void Update()
     {
-        if (this.photonView.isMine)
+        timer += Time.deltaTime;
+
+        if (Input.GetButton("Fire1") && timer >= timeBetweenBullets && Time.timeScale != 0)
         {
-            timer += Time.deltaTime;
+            shoot();
+        }
 
-            if (Input.GetButton("Fire1") && timer >= timeBetweenBullets && Time.timeScale != 0)
-            {
-                shoot();
-            }
-
-            if (timer >= timeBetweenBullets * effectsDisplayTime)
-            {
-                this.disableEffects();
-            }
+        if (timer >= timeBetweenBullets * effectsDisplayTime)
+        {
+            this.disableEffects();
         }
     }
 
-    [RPC]
     public void disableEffects()
     {
         gunLine.enabled = false;
         gunLight.enabled = false;
-
-        if (this.photonView.isMine)
-            this.photonView.RPC("disableEffects", PhotonTargets.Others);
     }
 
-    [RPC]
     void shoot()
     {
         timer = 0f;
@@ -101,8 +93,5 @@ public class PlayerShooting : Photon.MonoBehaviour
         {
             gunLine.SetPosition(1, shootRay.origin + shootRay.direction * range);
         }
-
-        if (this.photonView.isMine)
-            this.photonView.RPC("shoot", PhotonTargets.Others);
     }
 }

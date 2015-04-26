@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class PlayerMovement : Photon.MonoBehaviour
+public class PlayerMovement : MonoBehaviour
 {
 
     private static Quaternion workingQuaternion = new Quaternion();
@@ -40,14 +40,14 @@ public class PlayerMovement : Photon.MonoBehaviour
 
     void FixedUpdate()
     {
-        if (this.photonView.isMine)
+        /*if (this.photonView.isMine)
         {
             InputMovement();
         }
         else
         {
             SyncedTransform();
-        }
+        }*/
     }
 
     void InputMovement()
@@ -108,7 +108,7 @@ public class PlayerMovement : Photon.MonoBehaviour
         }
     }
 
-    void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    /*void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
         if (stream.isWriting)
         {
@@ -132,5 +132,5 @@ public class PlayerMovement : Photon.MonoBehaviour
             syncEndRotation = syncRotation;
             syncStartRotation = playerRigidbody.rotation;
         }
-    }
+    }*/
 }

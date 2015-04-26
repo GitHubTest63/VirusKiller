@@ -1,3 +1,0 @@
-Start = position : 0,1.5,0
-Spawner = type : timed ; position : 1,0.3,23.5
-Spawner = type : triggered ; position : -0.23,0.69,-13.34

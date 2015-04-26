@@ -4,23 +4,21 @@ using System.Text;
 using System.Collections;
 using PlayerIO.GameLibrary;
 using System.Drawing;
-using MushroomsUnity3DExample.Messages;
-using System.Xml;
 
 namespace MushroomsUnity3DExample
 {
-    public class AuthenticatedPlayer : BasePlayer
+    /*public class AuthenticatedPlayer : BasePlayer
     {
         public string username;
         public string password;
-    }
+    }*/
 
     public class ConnectedPlayer : BasePlayer
     {
         public string name = "not initialized";
         public int lvl = 1;
-        public List<ConnectedPlayer> group;
-        public bool isLeader = true;
+        public List<ConnectedPlayer> group = new List<ConnectedPlayer>();
+        /*public bool isLeader = true;*/
     }
 
     public class GamePlayer : ConnectedPlayer
@@ -30,7 +28,7 @@ namespace MushroomsUnity3DExample
         public float posZ = 0.0f;
     }
 
-    [RoomType("Authentication")]
+    /*[RoomType("Authentication")]
     public class Authentication : Game<AuthenticatedPlayer>
     {
         private DBManager DBManager = new DBManager();
@@ -41,78 +39,8 @@ namespace MushroomsUnity3DExample
             switch (message.Type)
             {
                 case "Authenticate":
-                    /*string username = message.GetString(0);
+                    string username = message.GetString(0);
                     PlayerIO.BigDB.Load("Users", )
-                    DatabaseObject obj = new DatabaseObject();
-                    obj.Set("id", new Random().Next());
-                    PlayerIO.BigDB.CreateObject("Users", null, obj, delegate(DatabaseObject dbo)
-                    {
-                        Console.WriteLine("create user");
-                    }, delegate(PlayerIOError error)
-                    {
-                        Console.WriteLine(error.Message);
-                    });*/
-                    break;
-            }
-        }
-    }
-
-    [RoomType("Lobby")]
-    public class Lobby : Game<ConnectedPlayer>
-    {
-        private DBManager DBManager = new DBManager();
-        private Dictionary<string, List<ConnectedPlayer>> maps = new Dictionary<string, List<ConnectedPlayer>>();
-
-        public override void UserJoined(ConnectedPlayer player)
-        {
-            Console.WriteLine("Player " + player.ConnectUserId + " joined lobby");
-            foreach (ConnectedPlayer p in Players)
-            {
-                if (p.ConnectUserId != player.ConnectUserId)
-                {
-                    p.Send("PlayerJoinedLobby", player.ConnectUserId, player.name);
-                    player.Send("PlayerJoinedLobby", p.ConnectUserId, p.name);
-                }
-            }
-            player.Send("PlayerJoinedLobby", player.ConnectUserId, player.name);
-        }
-
-        public override void UserLeft(ConnectedPlayer player)
-        {
-            Console.WriteLine("Player " + player.ConnectUserId + " left lobby");
-            Broadcast("PlayerLeftLobby", player.ConnectUserId);
-        }
-
-        public override void GotMessage(ConnectedPlayer player, Message message)
-        {
-            Console.WriteLine("Receive " + message.GetType() + " Message from client " + player.ConnectUserId);
-            switch (message.Type)
-            {
-                case "Chat":
-                    Broadcast("ChatLobby", player.ConnectUserId, message.GetString(0));
-                    break;
-                case "SelectMap":
-                    List<ConnectedPlayer> players;
-                    if (this.maps.TryGetValue(message.GetString(0), out players))
-                    {
-                        if (!players.Contains(player))
-                        {
-                            players.Add(player);
-                        }
-                    }
-                    else
-                    {
-                        players = new List<ConnectedPlayer>();
-                        players.Add(player);
-                        this.maps.Add(message.GetString(0), players);
-                    }
-                    Broadcast("SelectMap", message.GetString(0), player.ConnectUserId);
-                    break;
-                case "PlayMap":
-                    this.createGame(player, message.GetString(0));
-                    break;
-                case "test":
-                    player.Send("test", "TG !");
                     DatabaseObject obj = new DatabaseObject();
                     obj.Set("id", new Random().Next());
                     PlayerIO.BigDB.CreateObject("Users", null, obj, delegate(DatabaseObject dbo)
@@ -125,20 +53,116 @@ namespace MushroomsUnity3DExample
                     break;
             }
         }
+    }*/
+
+    [RoomType("Lobby")]
+    public class Lobby : Game<ConnectedPlayer>
+    {
+        private Dictionary<string, List<ConnectedPlayer>> maps = new Dictionary<string, List<ConnectedPlayer>>();
+        private Dictionary<string, List<ConnectedPlayer>> pending = new Dictionary<string, List<ConnectedPlayer>>();
+
+        public override void UserJoined(ConnectedPlayer player)
+        {
+            string name = "unknown";
+            player.JoinData.TryGetValue("name", out name);
+            Console.WriteLine("Player " + name + " joined lobby");
+            player.name = name;
+            foreach (ConnectedPlayer p in Players)
+            {
+                if (p.ConnectUserId != player.ConnectUserId)
+                {
+                    p.Send("PlayerJoinedLobby", player.name);
+                    player.Send("PlayerJoinedLobby", p.name);
+                }
+            }
+            player.Send("PlayerJoinedLobby", player.name);
+        }
+
+        public override void UserLeft(ConnectedPlayer player)
+        {
+            Console.WriteLine("Player " + player.name + " left lobby");
+            Broadcast("PlayerLeftLobby", player.name);
+        }
+
+        public override void GotMessage(ConnectedPlayer player, Message message)
+        {
+            Console.WriteLine("Receive " + message.GetType() + " Message from client " + player.ConnectUserId);
+            switch (message.Type)
+            {
+                case "Chat":
+                    Broadcast("ChatLobby", player.name, message.GetString(0));
+                    break;
+                case "SelectMap":
+                    {
+                        List<ConnectedPlayer> players;
+                        if (this.maps.TryGetValue(message.GetString(0), out players))
+                        {
+                            if (players.Contains(player))
+                            {
+                                players.Remove(player);
+                            }
+                            else
+                            {
+                                players.Add(player);
+                            }
+                        }
+                        else
+                        {
+                            players = new List<ConnectedPlayer>();
+                            players.Add(player);
+                            this.maps.Add(message.GetString(0), players);
+                        }
+                        Broadcast("SelectMap", message.GetString(0), player.name);
+                    }
+                    break;
+                case "PlayMap":
+                    {
+                        foreach (KeyValuePair<string, List<ConnectedPlayer>> entry in this.maps)
+                        {
+                            List<ConnectedPlayer> players = entry.Value;
+                            if (players.Contains(player))
+                            {
+                                List<ConnectedPlayer> group;
+                                this.pending.TryGetValue(entry.Key, out group);
+                                foreach (ConnectedPlayer p in players)
+                                {
+                                    group.Add(p);
+                                    if (p == player)
+                                        continue;
+                                    p.Send("InvitationToJoinMap", player.name, entry.Key);
+                                }
+                                //send message to all players interested in this map
+                                return;
+                            }
+                        }
+                        this.createGame(player, message.GetString(0));
+                    }
+                    break;
+                case "AcceptInvitation":
+                    break;
+                case "DeclineInvitation":
+                    break;
+                /*case "test":
+                    player.Send("test", "TG !");
+                    DatabaseObject obj = new DatabaseObject();
+                    obj.Set("id", new Random().Next());
+                    PlayerIO.BigDB.CreateObject("Users", null, obj, delegate(DatabaseObject dbo)
+                    {
+                        Console.WriteLine("create user");
+                    }, delegate(PlayerIOError error)
+                    {
+                        Console.WriteLine(error.Message);
+                    });
+                    break;*/
+            }
+        }
 
         private void createGame(ConnectedPlayer player, string mapName)
         {
             string roomId = Guid.NewGuid().ToString("n");
-            if (player.group == null)
+            foreach (ConnectedPlayer p in player.group)
             {
-                player.Send("LaunchGame", roomId, mapName);
-            }
-            else
-            {
-                foreach (ConnectedPlayer p in player.group)
-                {
-                    p.Send("LaunchGame", roomId, mapName);
-                }
+                p.Send("LaunchGame", roomId, mapName);
             }
         }
     }
@@ -221,13 +245,5 @@ namespace MushroomsUnity3DExample
             }
         }
 
-        private void loadData()
-        {
-            //this.RoomData.;
-            byte[] data = EmbeddedResource.GetBytes("");
-            //XmlDocument doc = new XmlDocument();
-            string xml = Encoding.UTF8.GetString(data);
-            //doc.LoadXml(xml);
-        }
     }
 }

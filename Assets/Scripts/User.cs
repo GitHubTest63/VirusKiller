@@ -32,8 +32,7 @@ public class User : Character
 
     private void updateHealth()
     {
-        if (this.photonView.isMine)
-            GUIManager_Game.Instance.setHealth(this.health, this.maxHealth);
+        GUIManager_Game.Instance.setHealth(this.health, this.maxHealth);
     }
 
     public void changeWeapon(Weapon weapon)
