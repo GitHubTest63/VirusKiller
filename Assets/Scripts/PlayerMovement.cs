@@ -40,14 +40,9 @@ public class PlayerMovement : MonoBehaviour
 
     void FixedUpdate()
     {
-        /*if (this.photonView.isMine)
-        {
-            InputMovement();
-        }
-        else
-        {
-            SyncedTransform();
-        }*/
+        InputMovement();
+
+        //SyncedTransform();
     }
 
     void InputMovement()

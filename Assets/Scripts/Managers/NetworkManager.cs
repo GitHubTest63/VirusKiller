@@ -128,10 +128,10 @@ public class NetworkManager : MonoBehaviour
         );
     }
 
-    /*void joinGameRoom(string roomId, string mapName)
+    void joinGameRoom(string roomId, string mapName)
     {
         Dictionary<string, string> userData = new Dictionary<string, string>();
-        userData.Add("name", "Tacos");
+        userData.Add("name", this.playerName);
 
         client.Multiplayer.CreateJoinRoom(
             roomId,				//Room is the Alliance of the player 
@@ -154,7 +154,7 @@ public class NetworkManager : MonoBehaviour
             Debug.LogError("Error Joining Room: " + error.ToString());
         }
         );
-    }*/
+    }
 
     public void disconnect()
     {
@@ -216,7 +216,10 @@ public class NetworkManager : MonoBehaviour
                     MapManager.Instance.addPlayer(m.GetString(0), m.GetString(1));
                     break;
                 case "LaunchGame":
-                    //this.joinGameRoom(m.GetString(0), m.GetString(1));
+                    this.joinGameRoom(m.GetString(0), m.GetString(1));
+                    break;
+                case "InvitationToJoinMap":
+                    GUIManager_Lobby.Instance.showInvitationPanel(m.GetString(0), m.GetString(1));
                     break;
                 case "PlayerJoinedGame":
                     Debug.Log(m.GetString(1) + "joined the party at x:" + m.GetFloat(2) + ", y:" + m.GetFloat(3) + ", z:" + m.GetFloat(4));
@@ -286,6 +289,16 @@ public class NetworkManager : MonoBehaviour
     public void sendPlayMap(string mapName)
     {
         connection.Send("PlayMap", mapName);
+    }
+
+    public void sendAcceptInvitation()
+    {
+        connection.Send("AcceptInvitation");
+    }
+
+    public void sendDeclineInvitation()
+    {
+        connection.Send("DeclineInvitation");
     }
 
     /*public void send(string msgType, params object[] values)

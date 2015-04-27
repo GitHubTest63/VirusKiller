@@ -18,7 +18,8 @@ namespace MushroomsUnity3DExample
         public string name = "not initialized";
         public int lvl = 1;
         public List<ConnectedPlayer> group = new List<ConnectedPlayer>();
-        /*public bool isLeader = true;*/
+        public bool isReady = false;
+        public string pendingMap = null;
     }
 
     public class GamePlayer : ConnectedPlayer
@@ -131,7 +132,6 @@ namespace MushroomsUnity3DExample
                                         continue;
                                     p.Send("InvitationToJoinMap", player.name, entry.Key);
                                 }
-                                //send message to all players interested in this map
                                 return;
                             }
                         }
@@ -139,8 +139,43 @@ namespace MushroomsUnity3DExample
                     }
                     break;
                 case "AcceptInvitation":
+                    {
+                        player.isReady = true;
+                        List<ConnectedPlayer> players = null;
+                        string mapName = null;
+                        foreach (KeyValuePair<string, List<ConnectedPlayer>> entry in this.pending)
+                        {
+                            mapName = entry.Key;
+                            players = entry.Value;
+                            if (players.Contains(player))
+                            {
+                                foreach (ConnectedPlayer p in players)
+                                {
+                                    if (!p.isReady)
+                                    {
+                                        return;
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                        foreach (ConnectedPlayer p in players)
+                        {
+                            p.group.AddRange(players);
+                        }
+                        this.createGame(player, player.pendingMap);
+                    }
                     break;
                 case "DeclineInvitation":
+                    foreach (KeyValuePair<string, List<ConnectedPlayer>> entry in this.pending)
+                    {
+                        List<ConnectedPlayer> players = entry.Value;
+                        if (players.Contains(player))
+                        {
+                            players.Remove(player);
+                            Broadcast("SelectMap", entry.Key, player.name);
+                        }
+                    }
                     break;
                 /*case "test":
                     player.Send("test", "TG !");
@@ -160,9 +195,16 @@ namespace MushroomsUnity3DExample
         private void createGame(ConnectedPlayer player, string mapName)
         {
             string roomId = Guid.NewGuid().ToString("n");
-            foreach (ConnectedPlayer p in player.group)
+            if (player.group.Count == 0)
             {
-                p.Send("LaunchGame", roomId, mapName);
+                player.Send("LaunchGame", roomId, mapName);
+            }
+            else
+            {
+                foreach (ConnectedPlayer p in player.group)
+                {
+                    p.Send("LaunchGame", roomId, mapName);
+                }
             }
         }
     }
