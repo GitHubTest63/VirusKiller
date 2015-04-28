@@ -25,7 +25,7 @@ public class MapManager : MonoBehaviour
     public Text selectedPlayerText;
 
     private GameObject selectedPlayersContent;
-    private Dictionary<string, Dictionary<string, Text>> selectedPlayers = new Dictionary<string, Dictionary<string, Text>>();
+    private Dictionary<string, List<string>> selectedPlayers = new Dictionary<string, List<string>>();
 
     public List<Map> availablesMaps;
     private int currentMapIndex = -1;
@@ -119,12 +119,13 @@ public class MapManager : MonoBehaviour
         this.mapIcon.sprite = m.icon;
         this.mapDesc.text = m.description;
         this.updateChooseButtonText();
+        this.updatePlayers();
     }
 
     private void updateChooseButtonText()
     {
-        Dictionary<string, Text> players = this.getOrCreatePlayerList(this.mapName.text);
-        if (players.ContainsKey(NetworkManager.Instance.playerName))
+        List<string> players = this.getOrCreatePlayerList(this.mapName.text);
+        if (players.Contains(NetworkManager.Instance.playerName))
         {
             this.chooseButtonText.text = this.selectedMapChooseButtonText;
         }
@@ -140,19 +141,19 @@ public class MapManager : MonoBehaviour
         NetworkManager.Instance.sendPlayMap(m.name);
     }
 
-    private Dictionary<string, Text> getPlayerList(string mapName)
+    private List<string> getPlayerList(string mapName)
     {
-        Dictionary<string, Text> players;
+        List<string> players;
         this.selectedPlayers.TryGetValue(mapName, out players);
         return players;
     }
 
-    private Dictionary<string, Text> getOrCreatePlayerList(string mapName)
+    private List<string> getOrCreatePlayerList(string mapName)
     {
-        Dictionary<string, Text> players = this.getPlayerList(mapName);
+        List<string> players = this.getPlayerList(mapName);
         if (players == null)
         {
-            players = new Dictionary<string, Text>();
+            players = new List<string>();
             this.selectedPlayers.Add(mapName, players);
         }
         return players;
@@ -160,32 +161,51 @@ public class MapManager : MonoBehaviour
 
     public void addPlayer(string mapName, string playerName)
     {
-        Dictionary<string, Text> players = this.getOrCreatePlayerList(mapName);
-        if (players.ContainsKey(playerName))
+        List<string> players = this.getOrCreatePlayerList(mapName);
+        if (players.Contains(playerName))
         {
             this.removePlayer(mapName, playerName);
         }
-        Debug.Log("add " + playerName + " to map " + mapName);
-        Text txt = GameObject.Instantiate(this.selectedPlayerText) as Text;
-        txt.text = playerName;
-        txt.transform.SetParent(this.selectedPlayersContent.transform, false);
-        players.Add(playerName, txt);
+        else
+        {
+            players.Add(playerName);
+        }
+        if (mapName.Equals(this.mapName.text))
+        {
+            updatePlayers();
+        }
         this.updateChooseButtonText();
+    }
+
+    private void updatePlayers()
+    {
+        clearPlayersText();
+        List<string> players = this.getOrCreatePlayerList(this.mapName.text);
+        foreach (string p in players)
+        {
+            Text txt = GameObject.Instantiate(this.selectedPlayerText) as Text;
+            txt.text = p;
+            txt.transform.SetParent(this.selectedPlayersContent.transform, false);
+        }
+    }
+
+    private void clearPlayersText()
+    {
+        List<GameObject> children = new List<GameObject>();
+        foreach (Transform child in this.selectedPlayersContent.transform)
+        {
+            children.Add(child.gameObject);
+        }
+        children.ForEach(child => Destroy(child));
     }
 
     public void removePlayer(string mapName, string playerName)
     {
-        Dictionary<string, Text> players = this.getPlayerList(mapName);
+        List<string> players = this.getPlayerList(mapName);
         if (players == null)
         {
             return;
         }
-        Text txt;
-        if (players.TryGetValue(playerName, out txt))
-        {
-            Debug.Log("remove " + playerName + " from map " + mapName);
-            Destroy(txt.gameObject);
-            players.Remove(playerName);
-        }
+        this.updatePlayers();
     }
 }

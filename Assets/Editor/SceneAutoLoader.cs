@@ -5,13 +5,11 @@ using UnityEditor;
 /// Scene auto loader.
 /// </summary>
 /// <description>
-/// This class adds a File > Scene Autoload menu containing options to select
+/// This class adds a Scene > Scene Autoload menu containing options to select
 /// a "master scene" enable it to be auto-loaded when the user presses play
 /// in the editor. When enabled, the selected scene will be loaded on play,
 /// then the original scene will be reloaded on stop.
 ///
-/// Based on an idea on this thread:
-/// http://forum.unity3d.com/threads/157502-Executing-first-scene-in-build-settings-when-pressing-play-button-in-editor
 /// </description>
 [InitializeOnLoad]
 static class SceneAutoLoader
@@ -24,7 +22,7 @@ static class SceneAutoLoader
     }
 
     // Menu items to select the "master" scene and control whether or not to load it.
-    [MenuItem("Scene/Scene Autoload/Select Master Scene...")]
+    [MenuItem("Scene/Scene Autoload/Select Master Scene ...")]
     private static void SelectMasterScene()
     {
         string masterScene = EditorUtility.OpenFilePanel("Select Master Scene", Application.dataPath, "unity");

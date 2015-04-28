@@ -202,7 +202,8 @@ public class NetworkManager : MonoBehaviour
                     GameObject entity = EntitiesManager.Instance.getEntity(m.GetString(0));
                     if (entity != null)
                     {
-                        entity.transform.position.Set(m.GetFloat(1), m.GetFloat(2), m.GetFloat(3));
+                        PlayerMovement mov = entity.GetComponent<PlayerMovement>();
+                        mov.moveTo(m.GetFloat(1), m.GetFloat(2), m.GetFloat(3));
                     }
                     break;
                 //Lobby Messages
@@ -299,6 +300,11 @@ public class NetworkManager : MonoBehaviour
     public void sendDeclineInvitation()
     {
         connection.Send("DeclineInvitation");
+    }
+
+    public void sendPosition(Vector3 position)
+    {
+        connection.Send("PositionMessage", position.x, position.y, position.z);
     }
 
     /*public void send(string msgType, params object[] values)

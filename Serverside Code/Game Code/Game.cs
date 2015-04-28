@@ -16,17 +16,22 @@ namespace MushroomsUnity3DExample
     public class ConnectedPlayer : BasePlayer
     {
         public string name = "not initialized";
-        public int lvl = 1;
         public List<ConnectedPlayer> group = new List<ConnectedPlayer>();
         public bool isReady = false;
         public string pendingMap = null;
     }
 
-    public class GamePlayer : ConnectedPlayer
+    public class GamePlayer : BasePlayer
     {
+        public string name = "not initialized";
+        public int lvl = 1;
         public float posX = 0.0f;
         public float posY = 0.0f;
         public float posZ = 0.0f;
+
+        public float velocityX = 0.0f;
+        public float velocityY = 0.0f;
+        public float velocityZ = 0.0f;
     }
 
     /*[RoomType("Authentication")]
@@ -250,7 +255,7 @@ namespace MushroomsUnity3DExample
                         player.Send("PlayerJoinedGame", p.ConnectUserId, p.name, p.posX, p.posY, p.posZ);
                     }
                 }
-                player.Send("PlayerJoinedGame", player.ConnectUserId, player.name, player.posX, player.posY, player.posZ);
+                //player.Send("PlayerJoinedGame", player.ConnectUserId, player.name, player.posX, player.posY, player.posZ);
             }
             else
             {
@@ -283,6 +288,9 @@ namespace MushroomsUnity3DExample
                     player.posX = message.GetFloat(0);
                     player.posY = message.GetFloat(1);
                     player.posZ = message.GetFloat(2);
+                    break;
+                case "Shoot":
+                    Broadcast("Shoot", player.name);
                     break;
             }
         }
