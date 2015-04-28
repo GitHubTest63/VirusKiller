@@ -129,13 +129,16 @@ namespace MushroomsUnity3DExample
                             if (players.Contains(player))
                             {
                                 List<ConnectedPlayer> group;
-                                this.pending.TryGetValue(entry.Key, out group);
+                                if (!this.pending.TryGetValue(entry.Key, out group))
+                                {
+                                    group = new List<ConnectedPlayer>();
+                                    this.pending.Add(entry.Key, group);
+                                }
                                 foreach (ConnectedPlayer p in players)
                                 {
                                     group.Add(p);
-                                    if (p == player)
-                                        continue;
-                                    p.Send("InvitationToJoinMap", player.name, entry.Key);
+                                    if (p != player)
+                                        p.Send("InvitationToJoinMap", player.name, entry.Key);
                                 }
                                 return;
                             }
