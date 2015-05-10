@@ -43,7 +43,6 @@ public class Enemy : Character
             {
                 if (this.isWalking)
                 {
-                    Debug.Log("stop walk");
                     isWalking = false;
                     this.anim.SetBool("isWalking", false);
                 }
@@ -53,7 +52,6 @@ public class Enemy : Character
             {
                 if (!isWalking)
                 {
-                    Debug.Log("start walk");
                     this.isWalking = true;
                     this.anim.SetBool("isWalking", true);
                 }
@@ -84,7 +82,6 @@ public class Enemy : Character
     {
         if (hasTarget() && this.canAttack)
         {
-            Debug.Log("Attack");
             this.anim.SetTrigger("isAttacking");
             Character user = this.target.GetComponent<Character>();
             if (user)

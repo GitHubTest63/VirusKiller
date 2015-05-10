@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class PlayerMovement : MonoBehaviour
+public class PlayerMovement : Photon.MonoBehaviour
 {
 
     private static Quaternion workingQuaternion = new Quaternion();
@@ -24,7 +24,7 @@ public class PlayerMovement : MonoBehaviour
     public bool editorMode;
     private Quaternion targetRotation;
     private bool canRotate = false;
-    public bool isMine = false;
+    // public bool isMine = false;
 
     void Start()
     {
@@ -41,7 +41,8 @@ public class PlayerMovement : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (isMine)
+        //if (isMine)
+        if (this.photonView.isMine)
             InputMovement();
         else
             SyncedTransform();
@@ -69,9 +70,9 @@ public class PlayerMovement : MonoBehaviour
             this.canRotate = true;
             //movement
             this.playerRigidbody.MovePosition(this.playerRigidbody.position + transform.forward * this.speed * Time.fixedDeltaTime);
-            //this.transform.Translate(transform.forward * this.speed * Time.fixedDeltaTime, Space.World);
-            if (NetworkManager.Instance.isConnected)
-                NetworkManager.Instance.sendPosition(this.playerRigidbody.position);
+            ////this.transform.Translate(transform.forward * this.speed * Time.fixedDeltaTime, Space.World);
+            /*if (NetworkManager.Instance.isConnected)
+                NetworkManager.Instance.sendPosition(this.playerRigidbody.position);*/
         }
 
         if (this.canRotate)
@@ -124,7 +125,7 @@ public class PlayerMovement : MonoBehaviour
         syncStartRotation = playerRigidbody.rotation;*/
     }
 
-    /*void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
         if (stream.isWriting)
         {
@@ -148,5 +149,5 @@ public class PlayerMovement : MonoBehaviour
             syncEndRotation = syncRotation;
             syncStartRotation = playerRigidbody.rotation;
         }
-    }*/
+    }
 }

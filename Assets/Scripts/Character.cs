@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public abstract class Character : MonoBehaviour
+public abstract class Character : Photon.MonoBehaviour
 {
 
     public int health;
@@ -55,12 +55,13 @@ public abstract class Character : MonoBehaviour
         }
     }
 
+    [RPC]
     protected virtual void modifyHealth(int amount)
     {
         this.health = Mathf.Clamp(this.health - amount, 0, this.maxHealth);
 
-        /*if (this.photonView.isMine)
-            this.photonView.RPC("modifyHealth", PhotonTargets.Others, amount);*/
+        if (this.photonView.isMine)
+            this.photonView.RPC("modifyHealth", PhotonTargets.Others, amount);
     }
 
     public float getDamages()

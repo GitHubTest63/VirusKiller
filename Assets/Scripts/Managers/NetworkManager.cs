@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using PlayerIOClient;
 using System;
 
-public class NetworkManager : MonoBehaviour
+public class NetworkManager : Photon.MonoBehaviour
 {
 
     //Singleton
@@ -60,6 +60,12 @@ public class NetworkManager : MonoBehaviour
                 this.register(id, mp);
             }
         );
+    }
+
+    //temp
+    void Start()
+    {
+        joinGameRoom(null, null);
     }
 
     private void register(string id, string mp)
@@ -130,7 +136,10 @@ public class NetworkManager : MonoBehaviour
 
     void joinGameRoom(string roomId, string mapName)
     {
-        Dictionary<string, string> userData = new Dictionary<string, string>();
+        PhotonNetwork.ConnectUsingSettings("0.1");
+
+
+        /*Dictionary<string, string> userData = new Dictionary<string, string>();
         userData.Add("name", this.playerName);
 
         client.Multiplayer.CreateJoinRoom(
@@ -153,7 +162,7 @@ public class NetworkManager : MonoBehaviour
         {
             Debug.LogError("Error Joining Room: " + error.ToString());
         }
-        );
+        );*/
     }
 
     public void disconnect()
@@ -247,7 +256,14 @@ public class NetworkManager : MonoBehaviour
         messages.Add(m);
     }
 
-    /*void OnJoinedRoom()
+    #region "Photon"
+    void OnJoinedLobby()
+    {
+        Debug.Log("onJoinedLobby");
+        PhotonNetwork.JoinOrCreateRoom("Game", new RoomOptions() { }, TypedLobby.Default);
+    }
+
+    void OnJoinedRoom()
     {
         // Spawn player
         GameObject player = PhotonNetwork.Instantiate("Prefabs/" + playerPrefab.name, Vector3.up * 5, Quaternion.identity, 0);
@@ -260,7 +276,8 @@ public class NetworkManager : MonoBehaviour
         //attach main camera
         CameraFollow camFollow = Camera.main.GetComponent<CameraFollow>();
         camFollow.setTarget(player.transform);
-    }*/
+    }
+    #endregion
 
     /*void OnLevelWasLoaded(int level)
     {

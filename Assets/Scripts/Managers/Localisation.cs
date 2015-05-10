@@ -54,7 +54,6 @@ public class Localisation : MonoBehaviour
             {
                 break;
             }
-            Debug.Log(line);
             parse(line);
         }
     }
@@ -68,13 +67,10 @@ public class Localisation : MonoBehaviour
     {
         string[] values = toParse.Split(separators);
         string key = values[0];
-        Debug.Log("Key : " + key);
         for (int i = 1; i < values.Length; i++)
         {
             Language l = languages[i - 1];
-            Debug.Log("Language : " + l);
             Dictionary<string, string> localisations = this.getOrCreate(languages[i - 1]);
-            Debug.Log("Value : " + values[i]);
             localisations.Add(key, values[i]);
         }
     }
@@ -92,25 +88,21 @@ public class Localisation : MonoBehaviour
 
     public string get(Language language, string key)
     {
-        Debug.Log("try to get key : " + key);
         Dictionary<string, string> values;
         if (this.data.TryGetValue(language, out values))
         {
             string value;
             if (values.TryGetValue(key, out value))
             {
-                Debug.Log("localisation found : " + value);
                 return value;
             }
             else
             {
-                Debug.Log("no localisation for this key");
                 return key;
             }
         }
         else
         {
-            Debug.Log("no values for language : " + language);
             return key;
         }
     }
