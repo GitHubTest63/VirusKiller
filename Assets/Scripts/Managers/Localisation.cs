@@ -8,6 +8,7 @@ public class Localisation : MonoBehaviour
 {
     [Serializable]
     public enum Language { EN, FR }
+
     private static Language[] languages;
     private static char[] separators = new char[] { ';', '\t' };
     private static Localisation instance;
@@ -17,34 +18,29 @@ public class Localisation : MonoBehaviour
     {
         if (instance == null)
             instance = this;
+        else
+            Destroy(this);
     }
 
     private Dictionary<Language, Dictionary<string, string>> data = new Dictionary<Language, Dictionary<string, string>>();
     public TextAsset localisationData;
 
-    public Language currentLanguage = Language.EN;
-
-    public Language CurrentLanguage
-    {
-        get { return this.currentLanguage; }
-        set
-        {
-            Debug.Log("setter");
-            this.currentLanguage = value;
-            this.updateLanguage();
-        }
-    }
+    private Language currentLanguage = Language.EN;
 
     void Start()
     {
-        init();
-        string line;
         if (!localisationData)
         {
             Debug.LogError("No localisation Data");
             this.enabled = false;
             return;
         }
+    }
+
+    public void init()
+    {
+        languages = (Language[])Enum.GetValues(typeof(Language));
+        string line;
         line = Encoding.ASCII.GetString(localisationData.bytes);
         string[] lines = localisationData.text.Split(new char[] { '\n' });
         for (int i = 0; i < lines.Length; i++)
@@ -58,11 +54,6 @@ public class Localisation : MonoBehaviour
         }
     }
 
-    private void init()
-    {
-        languages = (Language[])Enum.GetValues(typeof(Language));
-    }
-
     private void parse(string toParse)
     {
         string[] values = toParse.Split(separators);
@@ -70,7 +61,7 @@ public class Localisation : MonoBehaviour
         for (int i = 1; i < values.Length; i++)
         {
             Language l = languages[i - 1];
-            Dictionary<string, string> localisations = this.getOrCreate(languages[i - 1]);
+            Dictionary<string, string> localisations = this.getOrCreate(l);
             localisations.Add(key, values[i]);
         }
     }
@@ -112,18 +103,25 @@ public class Localisation : MonoBehaviour
         return this.get(this.currentLanguage, key);
     }
 
-    public void changeLanguage(Localisation.Language language)
+    public void setLanguage(int languageIndex)
     {
-        this.currentLanguage = language;
-        this.updateLanguage();
+        if (languageIndex >= Enum.GetValues(typeof(Language)).Length)
+        {
+            this.currentLanguage = Language.EN;
+        }
+        else
+        {
+            this.currentLanguage = (Language)languageIndex;
+        }
+        //this.updateLanguage();
     }
 
-    public void updateLanguage()
+    /*public void updateLanguage()
     {
         Localizator[] toLocalize = GameObject.FindObjectsOfType<Localizator>();
         foreach (Localizator l in toLocalize)
         {
             l.updateLocalisation();
         }
-    }
+    }*/
 }

@@ -18,6 +18,10 @@ public class GameManager : MonoBehaviour
         {
             instance = this;
         }
+        else
+        {
+            Destroy(this);
+        }
     }
 
     // Use this for initialization
@@ -39,9 +43,9 @@ public class GameManager : MonoBehaviour
             return this.loading.progress;
     }
 
-    public void goToMainMenu()
+    public void goToConnectionScene()
     {
-        this.goToScene("mainMenu");
+        this.goToScene("connectionScene");
     }
 
     public void goToMainScene()
@@ -58,6 +62,14 @@ public class GameManager : MonoBehaviour
     {
         if (sceneName == null || sceneName.Equals(""))
             Debug.Log("Impossible to load scene " + sceneName);
+        PhotonNetwork.isMessageQueueRunning = false;
         this.loading = Application.LoadLevelAsync(sceneName);
+    }
+
+    void OnLevelWasLoaded(int level)
+    {
+        PhotonNetwork.isMessageQueueRunning = true;
+        Debug.Log("scene loaded");
+
     }
 }

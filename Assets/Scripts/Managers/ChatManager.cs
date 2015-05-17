@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
 
-public class ChatManager : MonoBehaviour
+public class ChatManager : Photon.MonoBehaviour
 {
     private static ChatManager instance;
     public static ChatManager Instance
@@ -45,7 +45,7 @@ public class ChatManager : MonoBehaviour
 
     }
 
-
+    [RPC]
     public void addChatMessage(string sender, string text)
     {
         Text txt = GameObject.Instantiate(this.chatText) as Text;
@@ -58,7 +58,7 @@ public class ChatManager : MonoBehaviour
         string txt = this.chatInput.text;
         if (!string.IsNullOrEmpty(txt))
         {
-            NetworkManager.Instance.sendChat(txt);
+            photonView.RPC("addChatMessage", PhotonTargets.All, NetworkManager.Instance.playerName, txt);
             this.chatInput.text = "";
         }
     }

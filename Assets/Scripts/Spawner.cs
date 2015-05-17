@@ -15,14 +15,13 @@ public abstract class Spawner : MonoBehaviour
         }
     }
 
-    // Update is called once per frame
     void Update()
     {
     }
 
     protected virtual void spawn()
     {
-        GameObject spawned = PhotonNetwork.Instantiate("Prefabs/" + this.toSpawn.name, Vector3.up * 5, Quaternion.identity, 0);
+        GameObject spawned = Instantiate(this.toSpawn, Vector3.up * 5, Quaternion.identity) as GameObject;
         spawned.transform.parent = this.transform;
         spawned.transform.position = this.transform.position;
         spawned.transform.rotation = this.transform.rotation;

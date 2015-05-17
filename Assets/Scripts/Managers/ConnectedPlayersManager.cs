@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
 
-public class ConnectedPlayersManager : MonoBehaviour
+public class ConnectedPlayersManager : Photon.MonoBehaviour
 {
     private static ConnectedPlayersManager instance;
     public static ConnectedPlayersManager Instance
@@ -38,8 +38,8 @@ public class ConnectedPlayersManager : MonoBehaviour
         children.ForEach(child => Destroy(child));
     }
 
-
-    public void addConnectedPlayer(string name)
+    [RPC]
+    private void addConnectedPlayer(string name)
     {
         Debug.Log("add connected player " + name);
         Text txt = GameObject.Instantiate(this.connectedPlayerText) as Text;
@@ -48,7 +48,18 @@ public class ConnectedPlayersManager : MonoBehaviour
         this.connectedPlayers.Add(name, txt);
     }
 
-    public void removeConnectedPlayer(string name)
+    public void addPlayer(string name)
+    {
+        photonView.RPC("addConnectedPlayer", PhotonTargets.AllBuffered, name);
+    }
+
+    public void removePlayer(string name)
+    {
+        photonView.RPC("removeConnectedPlayer", PhotonTargets.AllBuffered, name);
+    }
+
+    [RPC]
+    private void removeConnectedPlayer(string name)
     {
         Debug.Log("remove connected player " + name);
         Text txt;

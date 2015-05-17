@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
 
-public class MapManager : MonoBehaviour
+public class MapManager : Photon.MonoBehaviour
 {
     [System.Serializable]
     public struct Map
@@ -34,9 +34,6 @@ public class MapManager : MonoBehaviour
     private Text mapName;
     private Text chooseButtonText;
 
-    private string selectedMapChooseButtonText = "Remove";
-    private string defaultMapChooseButtonText = "Choose";
-
     void Awake()
     {
         if (instance == null)
@@ -65,11 +62,6 @@ public class MapManager : MonoBehaviour
         }
     }
 
-    /*public void addMap(Map mapName)
-    {
-
-    }*/
-
     private int updateMapIndex()
     {
         if (currentMapIndex < 0)
@@ -97,7 +89,16 @@ public class MapManager : MonoBehaviour
 
     public void selectMap(string mapName)
     {
-        NetworkManager.Instance.sendSelectedMap(mapName);
+        List<string> players = this.getOrCreatePlayerList(mapName);
+        if (players.Contains(NetworkManager.Instance.playerName))
+        {
+            this.photonView.RPC("removePlayer", PhotonTargets.AllBuffered, mapName, NetworkManager.Instance.playerName);
+        }
+        else
+        {
+            this.photonView.RPC("addPlayer", PhotonTargets.AllBuffered, mapName, NetworkManager.Instance.playerName);
+        }
+        this.updateChooseButtonText();
     }
 
     public void nextMap()
@@ -127,18 +128,29 @@ public class MapManager : MonoBehaviour
         List<string> players = this.getOrCreatePlayerList(this.mapName.text);
         if (players.Contains(NetworkManager.Instance.playerName))
         {
-            this.chooseButtonText.text = this.selectedMapChooseButtonText;
+            this.chooseButtonText.text = Localisation.Instance.get("selectedMapChooseButtonText");
         }
         else
         {
-            this.chooseButtonText.text = this.defaultMapChooseButtonText;
+            this.chooseButtonText.text = Localisation.Instance.get("defaultMapChooseButtonText");
         }
     }
 
     public void playSelectedMap()
     {
         Map m = this.availablesMaps[this.currentMapIndex];
-        NetworkManager.Instance.sendPlayMap(m.name);
+        List<string> players = this.getOrCreatePlayerList(m.name);
+        if (players.Contains(NetworkManager.Instance.playerName))
+        {
+            //want to play in multi
+            GUIManager_Lobby.Instance.invite(NetworkManager.Instance.playerName, m.name);
+        }
+        else
+        {
+            //want to play solo      
+            this.removePlayer(NetworkManager.Instance.playerName);
+            NetworkManager.Instance.joinGame(m.name);
+        }
     }
 
     private List<string> getPlayerList(string mapName)
@@ -159,22 +171,15 @@ public class MapManager : MonoBehaviour
         return players;
     }
 
+    [RPC]
     public void addPlayer(string mapName, string playerName)
     {
         List<string> players = this.getOrCreatePlayerList(mapName);
-        if (players.Contains(playerName))
-        {
-            this.removePlayer(mapName, playerName);
-        }
-        else
-        {
-            players.Add(playerName);
-        }
+        players.Add(playerName);
         if (mapName.Equals(this.mapName.text))
         {
             updatePlayers();
         }
-        this.updateChooseButtonText();
     }
 
     private void updatePlayers()
@@ -199,6 +204,15 @@ public class MapManager : MonoBehaviour
         children.ForEach(child => Destroy(child));
     }
 
+    public void removePlayer(string playerName)
+    {
+        foreach (Map map in this.availablesMaps)
+        {
+            this.photonView.RPC("removePlayer", PhotonTargets.AllBuffered, map.name, playerName);
+        }
+    }
+
+    [RPC]
     public void removePlayer(string mapName, string playerName)
     {
         List<string> players = this.getPlayerList(mapName);
@@ -206,6 +220,10 @@ public class MapManager : MonoBehaviour
         {
             return;
         }
-        this.updatePlayers();
+        players.Remove(playerName);
+        if (mapName.Equals(this.mapName.text))
+        {
+            updatePlayers();
+        }
     }
 }
